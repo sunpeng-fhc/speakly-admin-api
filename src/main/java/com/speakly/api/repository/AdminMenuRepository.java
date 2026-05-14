@@ -1,0 +1,11 @@
+package com.speakly.api.repository;
+
+import com.speakly.api.entity.AdminMenu;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface AdminMenuRepository extends JpaRepository<AdminMenu, Long> {
+
+    List<AdminMenu> findByEnabledTrueOrderBySortOrderAsc();
+}
