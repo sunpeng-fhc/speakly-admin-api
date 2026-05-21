@@ -11,6 +11,7 @@ public record ApiResponse<T>(
         return new ApiResponse<>(200, data, "请求成功");
     }
 
+
     public static <T> ApiResponse<T> success(T data, String msg) {
         return new ApiResponse<>(200, data, msg);
     }

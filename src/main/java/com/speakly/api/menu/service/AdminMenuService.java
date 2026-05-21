@@ -57,6 +57,8 @@ public class AdminMenuService {
         meta.setFullPage(menu.getIsFullPage());
         meta.setActivePath(menu.getActivePath());
         meta.setLink(menu.getLink());
+        meta.setDate(menu.getUpdatedAt());
+        meta.setEnabled(menu.getEnabled());
 
         response.setMeta(meta);
 

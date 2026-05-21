@@ -2,6 +2,9 @@ package com.speakly.api.menu.dto;
 
 import lombok.Data;
 
+import java.time.LocalDateTime;
+import java.util.Date;
+
 @Data
 public class MenuMetaDTO {
 
@@ -22,4 +25,8 @@ public class MenuMetaDTO {
     private String link;
 
     private Boolean fixedTab;
+
+    private LocalDateTime date;
+
+    private Boolean enabled;
 }
