@@ -13,6 +13,8 @@ public class LessonQueryDTO {
 
     private Boolean status;
 
+    private Boolean isDaily;
+
     private Integer current = 1;
 
     private Integer size = 10;

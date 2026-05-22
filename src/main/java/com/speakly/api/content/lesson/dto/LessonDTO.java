@@ -2,6 +2,7 @@ package com.speakly.api.content.lesson.dto;
 
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -34,6 +35,10 @@ public class LessonDTO {
     private Boolean isFeatured;
 
     private Integer sortOrder;
+
+    private Boolean isDaily;
+
+    private LocalDate dailyDate;
 
     private LocalDateTime publishedAt;
 

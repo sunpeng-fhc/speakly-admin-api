@@ -4,6 +4,7 @@ package com.speakly.api.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -59,6 +60,12 @@ public class Lesson {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "is_daily")
+    private Boolean isDaily = false;
+
+    @Column(name = "daily_date")
+    private LocalDate dailyDate;
 
     @PrePersist
     public void onCreate() {
