@@ -102,4 +102,13 @@ public class LessonSegmentServiceImpl implements LessonSegmentService{
         return dto;
     }
 
+    @Override
+    public List<LessonSegmentDTO> getByLessonId(Long lessonId) {
+
+        return segmentRepository
+                .findByLessonIdOrderBySortOrderAsc(lessonId)
+                .stream()
+                .map(this::toDTO)
+                .toList();
+    }
 }

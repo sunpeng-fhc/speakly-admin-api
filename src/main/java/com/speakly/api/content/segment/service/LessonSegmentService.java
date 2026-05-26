@@ -3,6 +3,8 @@ package com.speakly.api.content.segment.service;
 import com.speakly.api.common.PageResponse;
 import com.speakly.api.content.segment.dto.LessonSegmentDTO;
 
+import java.util.List;
+
 public interface LessonSegmentService {
 
     PageResponse<LessonSegmentDTO> list(Long lessonId, Integer current, Integer size);
@@ -14,4 +16,6 @@ public interface LessonSegmentService {
     LessonSegmentDTO update(Long id, LessonSegmentDTO dto);
 
     void delete(Long id);
+
+    List<LessonSegmentDTO> getByLessonId(Long lessonId);
 }

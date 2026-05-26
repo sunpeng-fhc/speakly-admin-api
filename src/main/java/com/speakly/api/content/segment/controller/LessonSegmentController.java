@@ -7,6 +7,8 @@ import com.speakly.api.content.segment.service.LessonSegmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/lesson-segment")
 @RequiredArgsConstructor
@@ -42,5 +44,14 @@ public class LessonSegmentController {
     public ApiResponse<Void> delete(@PathVariable Long id) {
         segmentService.delete(id);
         return ApiResponse.success(null, "删除成功");
+    }
+
+    @GetMapping("/list/{lessonId}")
+    public ApiResponse<List<LessonSegmentDTO>> getLessonSegments(
+            @PathVariable Long lessonId
+    ) {
+        return ApiResponse.success(
+                segmentService.getByLessonId(lessonId)
+        );
     }
 }
