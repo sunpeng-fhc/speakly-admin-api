@@ -12,7 +12,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -67,6 +70,58 @@ public class LessonVocabularyServiceImpl implements LessonVocabularyService {
     @Override
     public void delete(Long id) {
         vocabularyRepository.delete(getById(id));
+    }
+
+    @Override
+    public List<LessonVocabularyDTO> getByLessonId(Long lessonId) {
+        return vocabularyRepository
+                .findByLessonIdOrderBySortOrderAsc(lessonId)
+                .stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public List<LessonVocabularyDTO> saveVocabularies(
+            Long lessonId,
+            List<LessonVocabularyDTO> vocabularyDTOList
+    ) {
+
+        Lesson lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new RuntimeException("课程不存在"));
+
+        vocabularyRepository.deleteByLessonId(lessonId);
+
+        List<LessonVocabulary> vocabularies = new ArrayList<>();
+
+        for (int i = 0; i < vocabularyDTOList.size(); i++) {
+
+            LessonVocabularyDTO dto = vocabularyDTOList.get(i);
+
+            LessonVocabulary vocabulary = new LessonVocabulary();
+
+            vocabulary.setLesson(lesson);
+
+            vocabulary.setWord(dto.getWord());
+            vocabulary.setPhonetic(dto.getPhonetic());
+            vocabulary.setPartOfSpeech(dto.getPartOfSpeech());
+            vocabulary.setMeaning(dto.getMeaning());
+            vocabulary.setSimpleDefinition(dto.getSimpleDefinition());
+            vocabulary.setExampleSentence(dto.getExampleSentence());
+
+            vocabulary.setSortOrder(i + 1);
+
+            vocabularies.add(vocabulary);
+        }
+
+        List<LessonVocabulary> saved =
+                vocabularyRepository.saveAll(vocabularies);
+
+        return saved.stream()
+                .sorted(Comparator.comparing(LessonVocabulary::getSortOrder))
+                .map(this::toDTO)
+                .toList();
     }
 
     private LessonVocabulary getById(Long id) {

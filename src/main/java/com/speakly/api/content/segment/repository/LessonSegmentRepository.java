@@ -12,4 +12,6 @@ public interface LessonSegmentRepository extends JpaRepository<LessonSegment, Lo
     Page<LessonSegment> findByLessonId(Long lessonId, Pageable pageable);
 
     List<LessonSegment> findByLessonIdOrderBySortOrderAsc(Long lessonId);
+
+    void deleteByLessonId(Long lessonId);
 }

@@ -6,6 +6,7 @@ import com.speakly.api.content.segment.dto.LessonSegmentDTO;
 import com.speakly.api.content.segment.service.LessonSegmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -54,4 +55,27 @@ public class LessonSegmentController {
                 segmentService.getByLessonId(lessonId)
         );
     }
+
+    @PostMapping("/import-srt/{lessonId}")
+    public ApiResponse<List<LessonSegmentDTO>> importSrt(
+            @PathVariable Long lessonId,
+            @RequestParam("file") MultipartFile file
+    ) {
+        return ApiResponse.success(
+                segmentService.importSrt(lessonId, file),
+                "字幕解析成功"
+        );
+    }
+
+    @PostMapping("/save/{lessonId}")
+    public ApiResponse<List<LessonSegmentDTO>> saveSegments(
+            @PathVariable Long lessonId,
+            @RequestBody List<LessonSegmentDTO> segments
+    ) {
+        return ApiResponse.success(
+                segmentService.saveSegments(lessonId, segments),
+                "字幕保存成功"
+        );
+    }
+
 }

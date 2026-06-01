@@ -12,8 +12,17 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -108,6 +117,132 @@ public class LessonSegmentServiceImpl implements LessonSegmentService{
         return segmentRepository
                 .findByLessonIdOrderBySortOrderAsc(lessonId)
                 .stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public List<LessonSegmentDTO> importSrt(Long lessonId, MultipartFile file) {
+        Lesson lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new RuntimeException("课程不存在"));
+
+        try {
+            String content = new String(file.getBytes(), StandardCharsets.UTF_8);
+
+            List<LessonSegment> segments = parseSrt(content, lesson);
+
+            segmentRepository.deleteByLessonId(lessonId);
+
+            List<LessonSegment> saved = segmentRepository.saveAll(segments);
+
+            return saved.stream()
+                    .map(this::toDTO)
+                    .toList();
+
+        } catch (IOException e) {
+            throw new RuntimeException("SRT 文件读取失败");
+        }
+    }
+
+    private List<LessonSegment> parseSrt(String content, Lesson lesson) {
+        List<LessonSegment> segments = new ArrayList<>();
+
+        String[] blocks = content.split("\\r?\\n\\r?\\n");
+        int sortOrder = 1;
+
+        for (String block : blocks) {
+            String[] lines = block.split("\\r?\\n");
+
+            if (lines.length < 3) continue;
+
+            String timeLine = lines[1];
+
+            if (!timeLine.contains("-->")) continue;
+
+            String[] times = timeLine.split("-->");
+
+            BigDecimal startTime = parseTimeToSeconds(times[0].trim());
+            BigDecimal endTime = parseTimeToSeconds(times[1].trim());
+
+            String sentence = lines[2].trim();
+            String translation = lines.length >= 4 ? lines[3].trim() : "";
+
+            LessonSegment segment = new LessonSegment();
+            segment.setLesson(lesson);
+            segment.setStartTime(startTime);
+            segment.setEndTime(endTime);
+            segment.setSentence(sentence);
+            segment.setTranslation(translation);
+            segment.setSortOrder(sortOrder++);
+
+            segments.add(segment);
+        }
+
+        return segments;
+    }
+
+    private BigDecimal parseTimeToSeconds(String time) {
+        String[] parts = time.split(":");
+
+        int hours = Integer.parseInt(parts[0]);
+        int minutes = Integer.parseInt(parts[1]);
+
+        String[] secondParts = parts[2].split(",");
+
+        int seconds = Integer.parseInt(secondParts[0]);
+        int millis = Integer.parseInt(secondParts[1]);
+
+        double totalSeconds =
+                hours * 3600 +
+                        minutes * 60 +
+                        seconds +
+                        millis / 1000.0;
+
+        return BigDecimal.valueOf(totalSeconds)
+                .setScale(3, RoundingMode.HALF_UP);
+    }
+
+    @Override
+    @Transactional
+    public List<LessonSegmentDTO> saveSegments(
+            Long lessonId,
+            List<LessonSegmentDTO> segmentDTOList
+    ) {
+        Lesson lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new RuntimeException("课程不存在"));
+
+        segmentRepository.deleteByLessonId(lessonId);
+
+        List<LessonSegment> segments = new ArrayList<>();
+
+        for (int i = 0; i < segmentDTOList.size(); i++) {
+            LessonSegmentDTO dto = segmentDTOList.get(i);
+
+            LessonSegment segment = new LessonSegment();
+            segment.setLesson(lesson);
+            segment.setStartTime(dto.getStartTime());
+            segment.setEndTime(dto.getEndTime());
+            segment.setSentence(dto.getSentence());
+            segment.setTranslation(dto.getTranslation());
+            segment.setSortOrder(i + 1);
+
+            segments.add(segment);
+        }
+
+        List<LessonSegment> savedSegments = segmentRepository.saveAll(segments);
+
+        String transcript = savedSegments.stream()
+                .sorted(Comparator.comparing(LessonSegment::getSortOrder))
+                .map(LessonSegment::getSentence)
+                .filter(sentence -> sentence != null && !sentence.isBlank())
+                .collect(Collectors.joining("\n"));
+
+        lesson.setTranscript(transcript);
+        lessonRepository.save(lesson);
+
+        return savedSegments.stream()
+                .sorted(Comparator.comparing(LessonSegment::getSortOrder))
                 .map(this::toDTO)
                 .toList();
     }

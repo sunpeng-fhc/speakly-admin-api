@@ -2,6 +2,8 @@ package com.speakly.api.content.vocabulary.service;
 import com.speakly.api.common.PageResponse;
 import com.speakly.api.content.vocabulary.dto.LessonVocabularyDTO;
 
+import java.util.List;
+
 public interface LessonVocabularyService {
 
     PageResponse<LessonVocabularyDTO> list(Long lessonId, Integer current, Integer size);
@@ -13,4 +15,8 @@ public interface LessonVocabularyService {
     LessonVocabularyDTO update(Long id, LessonVocabularyDTO dto);
 
     void delete(Long id);
+
+    List<LessonVocabularyDTO> getByLessonId(Long lessonId);
+
+    List<LessonVocabularyDTO> saveVocabularies(Long lessonId, List<LessonVocabularyDTO> vocabularies);
 }
