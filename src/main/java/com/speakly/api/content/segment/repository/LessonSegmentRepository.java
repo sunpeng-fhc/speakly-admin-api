@@ -14,4 +14,6 @@ public interface LessonSegmentRepository extends JpaRepository<LessonSegment, Lo
     List<LessonSegment> findByLessonIdOrderBySortOrderAsc(Long lessonId);
 
     void deleteByLessonId(Long lessonId);
+
+    List<LessonSegment> findByLessonIdOrderBySortOrderAscStartTimeAsc(Long lessonId);
 }

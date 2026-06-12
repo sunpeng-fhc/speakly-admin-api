@@ -7,13 +7,16 @@ import com.speakly.api.content.lesson.dto.LessonQueryDTO;
 import com.speakly.api.content.lesson.repository.LessonRepository;
 import com.speakly.api.entity.Category;
 import com.speakly.api.entity.Lesson;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -32,22 +35,91 @@ public class LessonServiceImpl implements LessonService{
         Pageable pageable = PageRequest.of(
                 current - 1,
                 size,
-                Sort.by(Sort.Direction.ASC, "sortOrder", "id")
+                Sort.by(
+                        Sort.Order.asc("sortOrder"),
+                        Sort.Order.desc("createdAt")
+                )
         );
 
-        Page<Lesson> page;
+        Specification<Lesson> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
 
-        if (queryDTO.getCategoryId() != null) {
-            page = lessonRepository.findByCategoryId(queryDTO.getCategoryId(), pageable);
-        } else if (queryDTO.getKeyword() != null && !queryDTO.getKeyword().isBlank()) {
-            page = lessonRepository.findByTitleContainingIgnoreCase(queryDTO.getKeyword(), pageable);
-        } else if (queryDTO.getLevel() != null && !queryDTO.getLevel().isBlank()) {
-            page = lessonRepository.findByLevel(queryDTO.getLevel(), pageable);
-        } else if (queryDTO.getStatus() != null) {
-            page = lessonRepository.findByStatus(queryDTO.getStatus(), pageable);
-        } else {
-            page = lessonRepository.findAll(pageable);
-        }
+            if (queryDTO.getCategoryId() != null) {
+                predicates.add(
+                        cb.equal(root.get("category").get("id"), queryDTO.getCategoryId())
+                );
+            }
+
+            if (queryDTO.getTitle() != null && !queryDTO.getTitle().isBlank()) {
+                predicates.add(
+                        cb.like(
+                                cb.lower(root.get("title")),
+                                "%" + queryDTO.getTitle().toLowerCase() + "%"
+                        )
+                );
+            }
+
+            if (queryDTO.getSlug() != null && !queryDTO.getSlug().isBlank()) {
+                predicates.add(
+                        cb.like(
+                                cb.lower(root.get("slug")),
+                                "%" + queryDTO.getSlug().toLowerCase() + "%"
+                        )
+                );
+            }
+
+            if (queryDTO.getKeyword() != null && !queryDTO.getKeyword().isBlank()) {
+                String keyword = "%" + queryDTO.getKeyword().toLowerCase() + "%";
+
+                predicates.add(
+                        cb.or(
+                                cb.like(cb.lower(root.get("title")), keyword),
+                                cb.like(cb.lower(root.get("slug")), keyword),
+                                cb.like(cb.lower(root.get("summary")), keyword)
+                        )
+                );
+            }
+
+            if (queryDTO.getLevel() != null && !queryDTO.getLevel().isBlank()) {
+                predicates.add(
+                        cb.equal(root.get("level"), queryDTO.getLevel())
+                );
+            }
+
+            if (queryDTO.getStatus() != null) {
+                predicates.add(
+                        cb.equal(root.get("status"), queryDTO.getStatus())
+                );
+            }
+
+            if (queryDTO.getIsFeatured() != null) {
+                predicates.add(
+                        cb.equal(root.get("isFeatured"), queryDTO.getIsFeatured())
+                );
+            }
+
+            if (queryDTO.getIsDaily() != null) {
+                predicates.add(
+                        cb.equal(root.get("isDaily"), queryDTO.getIsDaily())
+                );
+            }
+
+            if (queryDTO.getStartTime() != null) {
+                predicates.add(
+                        cb.greaterThanOrEqualTo(root.get("createdAt"), queryDTO.getStartTime())
+                );
+            }
+
+            if (queryDTO.getEndTime() != null) {
+                predicates.add(
+                        cb.lessThanOrEqualTo(root.get("createdAt"), queryDTO.getEndTime())
+                );
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        Page<Lesson> page = lessonRepository.findAll(spec, pageable);
 
         List<LessonDTO> records = page.getContent()
                 .stream()
@@ -108,6 +180,8 @@ public class LessonServiceImpl implements LessonService{
         lesson.setDurationSeconds(dto.getDurationSeconds());
         lesson.setLevel(dto.getLevel());
         lesson.setTranscript(dto.getTranscript());
+        lesson.setIsDaily(dto.getIsDaily());
+        lesson.setDailyDate(dto.getDailyDate());
         lesson.setStatus(dto.getStatus());
         lesson.setIsFeatured(dto.getIsFeatured());
         lesson.setSortOrder(dto.getSortOrder());
@@ -133,6 +207,8 @@ public class LessonServiceImpl implements LessonService{
         dto.setPublishedAt(lesson.getPublishedAt());
         dto.setCreatedAt(lesson.getCreatedAt());
         dto.setUpdatedAt(lesson.getUpdatedAt());
+        dto.setIsDaily(lesson.getIsDaily());
+        dto.setDailyDate(lesson.getDailyDate());
         return dto;
     }
 

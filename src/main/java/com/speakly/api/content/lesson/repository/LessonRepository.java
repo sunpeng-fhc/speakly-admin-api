@@ -1,11 +1,16 @@
 package com.speakly.api.content.lesson.repository;
 
 import com.speakly.api.entity.Lesson;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface LessonRepository extends JpaRepository<Lesson, Long> {
+import java.util.List;
+import java.util.Optional;
+
+public interface LessonRepository extends JpaRepository<Lesson, Long> , JpaSpecificationExecutor<Lesson> {
 
     boolean existsBySlug(String slug);
 
@@ -16,4 +21,20 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
     Page<Lesson> findByLevel(String level, Pageable pageable);
 
     Page<Lesson> findByStatus(Boolean status, Pageable pageable);
+
+    Optional<Lesson> findFirstByStatusTrueAndIsFeaturedTrueOrderBySortOrderAscCreatedAtDesc();
+
+    Optional<Lesson> findFirstByStatusTrueAndIsDailyTrueOrderByDailyDateDescCreatedAtDesc();
+
+    Optional<Lesson> findFirstByStatusTrueOrderByCreatedAtDesc();
+
+    long countByCategoryIdAndStatusTrue(Long categoryId);
+
+    List<Lesson> findTop4ByStatusTrueOrderByCreatedAtDesc();
+
+    List<Lesson> findTop6ByStatusTrueAndIsFeaturedTrueOrderBySortOrderAscCreatedAtDesc();
+
+    Optional<Lesson> findBySlugAndStatusTrue(String slug);
+
+    List<Lesson> findByCategoryIdAndStatusTrueOrderBySortOrderAscCreatedAtDesc(Long categoryId);
 }

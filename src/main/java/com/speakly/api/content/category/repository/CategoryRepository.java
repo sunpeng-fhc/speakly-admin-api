@@ -6,7 +6,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
@@ -24,6 +26,8 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     WHERE
         (:name IS NULL OR :name = '' OR c.name ILIKE '%' || CAST(:name AS TEXT) || '%')
     AND
+        (:shortName IS NULL OR :shortName = '' OR c.short_name ILIKE '%' || CAST(:shortName AS TEXT) || '%')
+    AND
         (:slug IS NULL OR :slug = '' OR c.slug ILIKE '%' || CAST(:slug AS TEXT) || '%')
     AND
         (:description IS NULL OR :description = '' OR c.description ILIKE '%' || CAST(:description AS TEXT) || '%')
@@ -36,6 +40,8 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     WHERE
         (:name IS NULL OR :name = '' OR c.name ILIKE '%' || CAST(:name AS TEXT) || '%')
     AND
+        (:shortName IS NULL OR :shortName = '' OR c.short_name ILIKE '%' || CAST(:shortName AS TEXT) || '%')
+    AND
         (:slug IS NULL OR :slug = '' OR c.slug ILIKE '%' || CAST(:slug AS TEXT) || '%')
     AND
         (:description IS NULL OR :description = '' OR c.description ILIKE '%' || CAST(:description AS TEXT) || '%')
@@ -45,10 +51,15 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
             nativeQuery = true)
     Page<Category> searchCategories(
             String name,
+            String shortName,
             String slug,
             String description,
             Boolean status,
             Pageable pageable
     );
+
+    List<Category> findByStatusTrueOrderBySortOrderAscCreatedAtDesc();
+
+    Optional<Category> findBySlugAndStatusTrue(String slug);
 }
 

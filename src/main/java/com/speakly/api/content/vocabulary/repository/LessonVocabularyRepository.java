@@ -16,4 +16,6 @@ public interface LessonVocabularyRepository  extends JpaRepository<LessonVocabul
 
     void deleteByLessonId(Long lessonId);
 
+    List<LessonVocabulary> findByLessonIdOrderBySortOrderAscIdAsc(Long lessonId);
+
 }

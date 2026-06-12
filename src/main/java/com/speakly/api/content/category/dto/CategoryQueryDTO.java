@@ -10,6 +10,8 @@ public class CategoryQueryDTO {
      */
     private String name;
 
+    private String shortName;
+
     /**
      * 分类slug
      */

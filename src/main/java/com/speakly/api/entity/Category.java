@@ -18,6 +18,10 @@ public class Category {
     @Column(nullable = false, length = 100)
     private String name;
 
+    // DAILY
+    @Column(name = "short_name", length = 50)
+    private String shortName;
+
     @Column(nullable = false, unique = true, length = 100)
     private String slug;
 

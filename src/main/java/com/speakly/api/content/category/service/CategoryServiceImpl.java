@@ -33,6 +33,7 @@ public class CategoryServiceImpl implements CategoryService{
 
         Page<Category> page = categoryRepository.searchCategories(
                 queryDTO.getName(),
+                queryDTO.getShortName(),
                 queryDTO.getSlug(),
                 queryDTO.getDescription(),
                 queryDTO.getStatus(),
@@ -84,6 +85,7 @@ public class CategoryServiceImpl implements CategoryService{
 
     private void copyToEntity(CategoryDTO dto, Category category) {
         category.setName(dto.getName());
+        category.setShortName(dto.getShortName());
         category.setSlug(dto.getSlug());
         category.setDescription(dto.getDescription());
         category.setIcon(dto.getIcon());
@@ -98,6 +100,7 @@ public class CategoryServiceImpl implements CategoryService{
         CategoryDTO dto = new CategoryDTO();
         dto.setId(category.getId());
         dto.setName(category.getName());
+        dto.setShortName(category.getShortName());
         dto.setSlug(category.getSlug());
         dto.setDescription(category.getDescription());
         dto.setIcon(category.getIcon());

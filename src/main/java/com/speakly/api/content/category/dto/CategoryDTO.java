@@ -13,6 +13,8 @@ public class CategoryDTO {
 
     private String name;
 
+    private String shortName;
+
     private String slug;
 
     private String description;
