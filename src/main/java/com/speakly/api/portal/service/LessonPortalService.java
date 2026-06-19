@@ -1,5 +1,8 @@
 package com.speakly.api.portal.service;
 
+import com.speakly.api.common.PageResponse;
+import com.speakly.api.content.lesson.dto.LessonDTO;
+import com.speakly.api.content.lesson.dto.LessonQueryDTO;
 import com.speakly.api.content.lesson.repository.LessonRepository;
 import com.speakly.api.content.segment.repository.LessonSegmentRepository;
 import com.speakly.api.content.vocabulary.repository.LessonVocabularyRepository;
@@ -22,6 +25,8 @@ public class LessonPortalService {
     private final LessonSegmentRepository lessonSegmentRepository;
     private final LessonVocabularyRepository lessonVocabularyRepository;
 
+    private final com.speakly.api.content.lesson.service.LessonService contentLessonService;
+
     @Transactional(readOnly = true)
     public LessonDetailResponse getLessonDetailBySlug(String slug) {
         Lesson lesson = lessonRepository.findBySlugAndStatusTrue(slug)
@@ -35,6 +40,12 @@ public class LessonPortalService {
 
         return toDetailResponse(lesson, segments, vocabularies);
     }
+
+    @Transactional(readOnly = true)
+    public PageResponse<LessonDTO> list(LessonQueryDTO queryDTO) {
+        return contentLessonService.list(queryDTO);
+    }
+
 
     private LessonDetailResponse toDetailResponse(
             Lesson lesson,
@@ -111,4 +122,7 @@ public class LessonPortalService {
                 .exampleSentence(vocabulary.getExampleSentence())
                 .build();
     }
+
+
+
 }

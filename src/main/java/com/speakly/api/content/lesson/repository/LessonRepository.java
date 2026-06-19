@@ -37,4 +37,10 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> , JpaSpeci
     Optional<Lesson> findBySlugAndStatusTrue(String slug);
 
     List<Lesson> findByCategoryIdAndStatusTrueOrderBySortOrderAscCreatedAtDesc(Long categoryId);
+
+    Page<Lesson> findByStatusTrue(Pageable pageable);
+
+    Page<Lesson> findByTitleContainingIgnoreCaseAndStatusTrue(String keyword, Pageable pageable);
+
+
 }

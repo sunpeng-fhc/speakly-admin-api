@@ -54,7 +54,7 @@ public class LessonServiceImpl implements LessonService{
                 predicates.add(
                         cb.like(
                                 cb.lower(root.get("title")),
-                                "%" + queryDTO.getTitle().toLowerCase() + "%"
+                                "%" + queryDTO.getTitle().trim().toLowerCase() + "%"
                         )
                 );
             }
@@ -63,19 +63,19 @@ public class LessonServiceImpl implements LessonService{
                 predicates.add(
                         cb.like(
                                 cb.lower(root.get("slug")),
-                                "%" + queryDTO.getSlug().toLowerCase() + "%"
+                                "%" + queryDTO.getSlug().trim().toLowerCase() + "%"
                         )
                 );
             }
 
             if (queryDTO.getKeyword() != null && !queryDTO.getKeyword().isBlank()) {
-                String keyword = "%" + queryDTO.getKeyword().toLowerCase() + "%";
+                String keyword = "%" + queryDTO.getKeyword().trim().toLowerCase() + "%";
 
                 predicates.add(
                         cb.or(
                                 cb.like(cb.lower(root.get("title")), keyword),
-                                cb.like(cb.lower(root.get("slug")), keyword),
-                                cb.like(cb.lower(root.get("summary")), keyword)
+                                cb.like(cb.lower(root.get("summary")), keyword),
+                                cb.like(cb.lower(root.get("slug")), keyword)
                         )
                 );
             }
@@ -89,6 +89,10 @@ public class LessonServiceImpl implements LessonService{
             if (queryDTO.getStatus() != null) {
                 predicates.add(
                         cb.equal(root.get("status"), queryDTO.getStatus())
+                );
+            } else {
+                predicates.add(
+                        cb.equal(root.get("status"), true)
                 );
             }
 
@@ -128,6 +132,7 @@ public class LessonServiceImpl implements LessonService{
 
         return new PageResponse<>(records, current, size, page.getTotalElements());
     }
+
 
     @Override
     public LessonDTO detail(Long id) {
