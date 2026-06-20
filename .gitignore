@@ -1,26 +1,31 @@
+### HELP ###
 HELP.md
 
+### Build ###
 target/
-!**/src/main/**/target/
-!**/src/test/**/target/
+build/
+out/
 
 ### Maven Wrapper ###
 .mvn/wrapper/maven-wrapper.jar
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
 ### IntelliJ IDEA ###
-.idea
-*.iws
+.idea/
 *.iml
 *.ipr
+*.iws
+
+### Eclipse / STS ###
+.project
+.classpath
+.settings/
+.factorypath
+.springBeans
+.apt_generated
+.sts4-cache
+
+### VS Code ###
+.vscode/
 
 ### NetBeans ###
 /nbproject/private/
@@ -29,25 +34,19 @@ target/
 /nbdist/
 /.nb-gradle/
 
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
-.vscode/
-
-### Mac OS ###
+### MacOS ###
 .DS_Store
 
 ### Logs ###
 *.log
 
-### Environment Files ###
+### Environment ###
 .env
 .env.*
 
-### Application Secrets ###
+### Spring Profiles ###
 application-local.yml
+application-local.properties
 application-prod.yml
 application-secret.yml
 
@@ -57,8 +56,12 @@ uploads/
 ### Database Files ###
 *.db
 *.sqlite
-*.sqlite3.DS_Store
-target/
-.env
-application-local.yml
-application-local.properties
+*.sqlite3
+
+### Generated Files ###
+generated/
+temp/
+tmp/
+
+### OS Files ###
+Thumbs.db
