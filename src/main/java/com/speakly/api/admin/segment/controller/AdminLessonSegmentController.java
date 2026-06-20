@@ -1,0 +1,82 @@
+package com.speakly.api.admin.segment.controller;
+
+
+import com.speakly.api.admin.segment.dto.LessonSegmentDTO;
+import com.speakly.api.admin.segment.service.LessonSegmentService;
+import com.speakly.api.common.response.ApiResponse;
+import com.speakly.api.common.response.PageResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/lesson-segment")
+@RequiredArgsConstructor
+public class AdminLessonSegmentController {
+
+    private final LessonSegmentService segmentService;
+
+    @GetMapping("/list")
+    public ApiResponse<PageResponse<LessonSegmentDTO>> list(
+            @RequestParam Long lessonId,
+            @RequestParam(defaultValue = "1") Integer current,
+            @RequestParam(defaultValue = "10") Integer size
+    ) {
+        return ApiResponse.success(segmentService.list(lessonId, current, size));
+    }
+
+    @GetMapping("/detail/{id}")
+    public ApiResponse<LessonSegmentDTO> detail(@PathVariable Long id) {
+        return ApiResponse.success(segmentService.detail(id));
+    }
+
+    @PostMapping("/create")
+    public ApiResponse<LessonSegmentDTO> create(@RequestBody LessonSegmentDTO dto) {
+        return ApiResponse.success(segmentService.create(dto));
+    }
+
+    @PutMapping("/update/{id}")
+    public ApiResponse<LessonSegmentDTO> update(@PathVariable Long id, @RequestBody LessonSegmentDTO dto) {
+        return ApiResponse.success(segmentService.update(id, dto));
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ApiResponse<Void> delete(@PathVariable Long id) {
+        segmentService.delete(id);
+        return ApiResponse.success(null, "删除成功");
+    }
+
+    @GetMapping("/list/{lessonId}")
+    public ApiResponse<List<LessonSegmentDTO>> getLessonSegments(
+            @PathVariable Long lessonId
+    ) {
+        return ApiResponse.success(
+                segmentService.getByLessonId(lessonId)
+        );
+    }
+
+    @PostMapping("/import-srt/{lessonId}")
+    public ApiResponse<List<LessonSegmentDTO>> importSrt(
+            @PathVariable Long lessonId,
+            @RequestParam("file") MultipartFile file
+    ) {
+        return ApiResponse.success(
+                segmentService.importSrt(lessonId, file),
+                "字幕解析成功"
+        );
+    }
+
+    @PostMapping("/save/{lessonId}")
+    public ApiResponse<List<LessonSegmentDTO>> saveSegments(
+            @PathVariable Long lessonId,
+            @RequestBody List<LessonSegmentDTO> segments
+    ) {
+        return ApiResponse.success(
+                segmentService.saveSegments(lessonId, segments),
+                "字幕保存成功"
+        );
+    }
+
+}

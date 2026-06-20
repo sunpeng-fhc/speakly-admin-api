@@ -1,6 +1,6 @@
 package com.speakly.api.repository;
 
-import com.speakly.api.entity.AdminMenu;
+import com.speakly.api.domain.entity.AdminMenu;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
