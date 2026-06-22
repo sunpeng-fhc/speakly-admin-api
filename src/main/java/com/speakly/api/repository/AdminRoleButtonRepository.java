@@ -8,4 +8,9 @@ import java.util.List;
 public interface AdminRoleButtonRepository extends JpaRepository<AdminRoleButton, Long> {
 
     List<AdminRoleButton> findByRoleIdIn(List<Long> roleIds);
+
+    List<AdminRoleButton> findByRoleId(Long roleId);
+
+    void deleteByRoleId(Long roleId);
+
 }

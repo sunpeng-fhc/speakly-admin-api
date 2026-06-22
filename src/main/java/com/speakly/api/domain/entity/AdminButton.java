@@ -31,4 +31,7 @@ public class AdminButton {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "menu_id")
+    private Long menuId;
 }

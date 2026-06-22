@@ -11,6 +11,8 @@ import java.util.List;
 @AllArgsConstructor
 public class MenuResponse {
 
+    private Long id;
+
     private String name;
 
     private String path;

@@ -1,10 +1,10 @@
 package com.speakly.api.admin.user.service;
 
-
-
-import com.speakly.api.repository.AdminRoleRepository;
-import com.speakly.api.repository.AdminUserRepository;
-import com.speakly.api.repository.AdminUserRoleRepository;
+import com.speakly.api.admin.user.dto.UserRoleSaveRequest;
+import com.speakly.api.admin.user.dto.UserSaveRequest;
+import com.speakly.api.domain.entity.AdminButton;
+import com.speakly.api.domain.entity.AdminRoleButton;
+import com.speakly.api.repository.*;
 import com.speakly.api.admin.user.dto.UserInfoResponse;
 import com.speakly.api.admin.user.dto.UserListItemResponse;
 import com.speakly.api.common.response.PageResponse;
@@ -15,9 +15,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -27,21 +30,29 @@ public class UserService {
     private final AdminUserRoleRepository adminUserRoleRepository;
     private final AdminRoleRepository adminRoleRepository;
 
+    private final AdminRoleButtonRepository adminRoleButtonRepository;
+    private final AdminButtonRepository adminButtonRepository;
+
     public UserInfoResponse getUserInfo() {
 
-        // 目前先写死 Super，后面 JWT 做好后再从 token 里解析 username
+        // V1 阶段：暂时写死 Super
+        // 后面接 JWT 后，再从 token 中解析 username
         AdminUser user = adminUserRepository.findByUsername("Super")
                 .orElseThrow(() -> new RuntimeException("用户不存在"));
 
         List<AdminUserRole> userRoles = adminUserRoleRepository.findByUserId(user.getId());
 
-        List<String> roles = userRoles.stream()
-                .map(userRole -> adminRoleRepository.findById(userRole.getRoleId()))
+        List<Long> roleIds = userRoles.stream()
+                .map(AdminUserRole::getRoleId)
+                .toList();
+
+        List<String> roles = roleIds.stream()
+                .map(roleId -> adminRoleRepository.findById(roleId))
                 .filter(optionalRole -> optionalRole.isPresent())
                 .map(optionalRole -> optionalRole.get().getRoleCode())
                 .toList();
 
-        List<String> buttons = List.of("B_CODE1", "B_CODE2", "B_CODE3");
+        List<String> buttons = getButtonCodesByRoleIds(roleIds);
 
         return new UserInfoResponse(
                 String.valueOf(user.getId()),
@@ -52,7 +63,27 @@ public class UserService {
         );
     }
 
+    private List<String> getButtonCodesByRoleIds(List<Long> roleIds) {
+        if (roleIds == null || roleIds.isEmpty()) {
+            return List.of();
+        }
 
+        List<Long> buttonIds = adminRoleButtonRepository.findByRoleIdIn(roleIds)
+                .stream()
+                .map(AdminRoleButton::getButtonId)
+                .distinct()
+                .toList();
+
+        if (buttonIds.isEmpty()) {
+            return List.of();
+        }
+
+        return adminButtonRepository.findByIdInAndEnabledTrue(buttonIds)
+                .stream()
+                .map(AdminButton::getButtonCode)
+                .distinct()
+                .toList();
+    }
 
     public PageResponse<UserListItemResponse> getUserList(Integer current, Integer size, String status) {
         int pageIndex = current == null || current < 1 ? 0 : current - 1;
@@ -109,4 +140,74 @@ public class UserService {
                 page.getTotalElements()
         );
     }
+
+
+    @Transactional
+    public List<Long> getUserRoleIds(Long userId) {
+        adminUserRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("用户不存在"));
+
+        return adminUserRoleRepository.findByUserId(userId)
+                .stream()
+                .map(AdminUserRole::getRoleId)
+                .toList();
+    }
+
+    @Transactional
+    public void saveUserRoles(UserRoleSaveRequest request) {
+        adminUserRepository.findById(request.getUserId())
+                .orElseThrow(() -> new RuntimeException("用户不存在"));
+
+        adminUserRoleRepository.deleteByUserId(request.getUserId());
+        adminUserRoleRepository.flush();
+
+        if (request.getRoleIds() == null || request.getRoleIds().isEmpty()) {
+            return;
+        }
+
+        List<AdminUserRole> userRoles = request.getRoleIds()
+                .stream()
+                .filter(Objects::nonNull)
+                .distinct()
+                .map(roleId -> AdminUserRole.builder()
+                        .userId(request.getUserId())
+                        .roleId(roleId)
+                        .createdAt(LocalDateTime.now())
+                        .build())
+                .toList();
+
+        adminUserRoleRepository.saveAll(userRoles);
+    }
+
+    @Transactional
+    public void saveUser(UserSaveRequest request) {
+        AdminUser user;
+
+        if (request.getId() == null) {
+            user = new AdminUser();
+            user.setUsername(request.getUsername());
+            user.setPasswordHash("123456");
+            user.setCreatedAt(LocalDateTime.now());
+            user.setStatus(request.getStatus() == null ? "1" : request.getStatus());
+        } else {
+            user = adminUserRepository.findById(request.getId())
+                    .orElseThrow(() -> new RuntimeException("用户不存在"));
+            user.setUpdateBy("Super");
+        }
+
+        user.setMobile(request.getMobile());
+        user.setGender(request.getGender());
+        user.setEmail(request.getEmail());
+        user.setDepartment(request.getDepartment());
+        user.setUpdatedAt(LocalDateTime.now());
+
+        AdminUser savedUser = adminUserRepository.save(user);
+
+        UserRoleSaveRequest roleRequest = new UserRoleSaveRequest();
+        roleRequest.setUserId(savedUser.getId());
+        roleRequest.setRoleIds(request.getRoleIds());
+
+        saveUserRoles(roleRequest);
+    }
+
 }

@@ -8,4 +8,8 @@ import java.util.List;
 public interface AdminRoleMenuRepository extends JpaRepository<AdminRoleMenu, Long> {
 
     List<AdminRoleMenu> findByRoleIdIn(List<Long> roleIds);
+
+    List<AdminRoleMenu> findByRoleId(Long roleId);
+
+    void deleteByRoleId(Long roleId);
 }

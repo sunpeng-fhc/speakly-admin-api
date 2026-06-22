@@ -2,7 +2,7 @@ package com.speakly.api.admin.menu.dto;
 
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class MenuMetaDTO {
@@ -25,7 +25,9 @@ public class MenuMetaDTO {
 
     private Boolean fixedTab;
 
-    private LocalDateTime date;
+    private String date;
 
     private Boolean enabled;
+
+    private List<AuthButtonDTO> authList;
 }
